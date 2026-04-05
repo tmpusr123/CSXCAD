@@ -71,6 +71,8 @@ cdef class CSProperties:
         prop = None
         if p_type == CONDUCTINGSHEET + METAL:
             prop = CSPropConductingSheet(pset, no_init=no_init, **kw)
+        elif p_type == LOSSYMETAL + METAL:
+            prop = CSPropLossyMetal(pset, no_init=no_init, **kw)
         elif p_type == METAL:
             prop = CSPropMetal(pset, no_init=no_init, **kw)
         elif p_type == MATERIAL:
@@ -115,6 +117,8 @@ cdef class CSProperties:
             prop = CSPropMetal(pset, no_init=no_init, **kw)
         elif type_str=='ConductingSheet':
             prop = CSPropConductingSheet(pset, no_init=no_init, **kw)
+        elif type_str=='LossyMetal':
+            prop = CSPropLossyMetal(pset, no_init=no_init, **kw)
         elif type_str=='Excitation':
             prop = CSPropExcitation(pset, no_init=no_init, **kw)
         elif type_str=='ProbeBox':
@@ -1001,6 +1005,40 @@ cdef class CSPropConductingSheet(CSPropMetal):
         """ GetThickness()
         """
         return (<_CSPropConductingSheet*>self.thisptr).GetThickness()
+
+###############################################################################
+cdef class CSPropLossyMetal(CSPropMetal):
+    """ Lossy metal property
+
+    A lossy metal is a 3D conductor volume modeled with PEC interior and
+    Surface Impedance Boundary Condition (SIBC) on the surface. This enables
+    frequency-dependent conductor loss modeling without meshing inside the metal.
+
+    Unlike ConductingSheet (for thin 2D sheets), this is for bulk 3D conductors.
+
+    :param conductivity: float -- finite conductivity e.g. 56e6 (S/m) for copper
+    """
+    def __init__(self, ParameterSet pset, *args, no_init=False, **kw):
+        if no_init:
+            super(CSPropLossyMetal, self).__init__(pset, no_init=True)
+            return
+        if not self.thisptr:
+            self.thisptr = <_CSProperties*> new _CSPropLossyMetal(pset.thisptr)
+
+        if 'conductivity' in kw:
+            self.SetConductivity(kw['conductivity'])
+            del kw['conductivity']
+        super(CSPropLossyMetal, self).__init__(pset, *args, **kw)
+
+    def SetConductivity(self, val):
+        """ SetConductivity(val)
+        """
+        (<_CSPropLossyMetal*>self.thisptr).SetConductivity(val)
+
+    def GetConductivity(self):
+        """ GetConductivity()
+        """
+        return (<_CSPropLossyMetal*>self.thisptr).GetConductivity()
 
 ###############################################################################
 cdef class CSPropExcitation(CSProperties):

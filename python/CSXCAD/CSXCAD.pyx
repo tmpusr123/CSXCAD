@@ -37,7 +37,7 @@ Examples
 cimport CSXCAD.CSXCAD
 
 from CSXCAD.CSProperties import CSPropMaterial, CSPropExcitation
-from CSXCAD.CSProperties import CSPropMetal, CSPropConductingSheet
+from CSXCAD.CSProperties import CSPropMetal, CSPropConductingSheet, CSPropLossyMetal
 from CSXCAD.CSProperties import CSPropLumpedElement, CSPropProbeBox, CSPropDumpBox, CSPropAbsorbingBC
 from CSXCAD.CSPrimitives import CSPrimPoint, CSPrimBox, CSPrimCylinder, CSPrimCylindricalShell
 from CSXCAD.CSPrimitives import CSPrimSphere, CSPrimSphericalShell
@@ -229,6 +229,17 @@ cdef class ContinuousStructure:
         CSXCAD.CSProperties.CSPropConductingSheet
         """
         return self.__CreateProperty('ConductingSheet', name, **kw)
+
+    def AddLossyMetal(self, name, **kw):
+        """ AddLossyMetal(name, **kw)
+
+        Add a lossy metal (3D conductor with SIBC) with name `name`.
+
+        See Also
+        --------
+        CSXCAD.CSProperties.CSPropLossyMetal
+        """
+        return self.__CreateProperty('LossyMetal', name, **kw)
 
     def AddExcitation(self, name, exc_type, exc_val, **kw):
         """ AddExcitation(name, exc_type, exc_val, **kw)

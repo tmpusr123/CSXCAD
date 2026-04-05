@@ -49,6 +49,7 @@ class CSPropMaterial;
 class CSPropLumpedElement;
 class CSPropMetal;
 	class CSPropConductingSheet;
+	class CSPropLossyMetal;
 class CSPropExcitation;
 class CSPropProbeBox;
 	class CSPropDumpBox;
@@ -81,7 +82,7 @@ public:
 		ANY = 0xffff, UNKNOWN = 0x001, MATERIAL = 0x002, METAL = 0x004, EXCITATION = 0x008, PROBEBOX = 0x010, RESBOX = 0x020, DUMPBOX = 0x040, /* unused = 0x080, */
 		DISPERSIVEMATERIAL = 0x100, LORENTZMATERIAL = 0x200, DEBYEMATERIAL = 0x400,
 		DISCRETE_MATERIAL = 0x1000, LUMPED_ELEMENT = 0x2000, CONDUCTINGSHEET = 0x4000,
-		ABSORBING_BC = 0x8000
+		ABSORBING_BC = 0x8000, LOSSYMETAL = 0x10000, MODE_ABSORB = 0x20000
 	};
 
 	//! Create a copy of this property. Optional: Copy all primitives assigned to this property too.
@@ -181,6 +182,8 @@ public:
 	CSPropMetal* ToMetal();
 	//! Convert to Conducting Sheet Property, returns NULL if type is different! \return Returns a CSPropConductingSheet* or NULL if type is different!
 	CSPropConductingSheet* ToConductingSheet();
+	//! Convert to Lossy Metal Property, returns NULL if type is different! \return Returns a CSPropLossyMetal* or NULL if type is different!
+	CSPropLossyMetal* ToLossyMetal();
 	//! Convert to Excitation Property, returns NULL if type is different! \return Returns a CSPropExcitation* or NULL if type is different!
 	CSPropExcitation* ToExcitation();
 	//! Convert to ProbeBox Property, returns NULL if type is different! \return Returns a CSPropProbeBox* or NULL if type is different!
