@@ -41,6 +41,7 @@ cdef extern from "CSXCAD/CSProperties.h":
         LUMPED_ELEMENT     "CSProperties::LUMPED_ELEMENT"
         CONDUCTINGSHEET    "CSProperties::CONDUCTINGSHEET"
         ABSORBING_BC       "CSProperties::ABSORBING_BC"
+        LOSSY_METAL        "CSProperties::LOSSY_METAL"
 
 cdef extern from "CSXCAD/CSProperties.h":
     ctypedef struct RGBa:
@@ -196,6 +197,16 @@ cdef extern from "CSXCAD/CSPropConductingSheet.h":
             double GetThickness()
 
 cdef class CSPropConductingSheet(CSPropMetal):
+    pass
+
+##############################################################################
+cdef extern from "CSXCAD/CSPropLossyMetal.h":
+    cdef cppclass _CSPropLossyMetal "CSPropLossyMetal" (_CSPropMetal):
+            _CSPropLossyMetal(_ParameterSet*) except +
+            void SetConductivity(double val)
+            double GetConductivity()
+
+cdef class CSPropLossyMetal(CSPropMetal):
     pass
 
 ##############################################################################
