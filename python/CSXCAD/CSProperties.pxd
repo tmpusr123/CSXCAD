@@ -129,6 +129,7 @@ cdef extern from "CSXCAD/CSPropAbsorbingBC.h":
         UNDEFINED   "CSPropAbsorbingBC::UNDEFINED"
         MUR_1ST     "CSPropAbsorbingBC::MUR_1ST"
         MUR_1ST_SA  "CSPropAbsorbingBC::MUR_1ST_SA"
+        CPML        "CSPropAbsorbingBC::CPML"
 
 cdef extern from "CSXCAD/CSPropAbsorbingBC.h":
     cdef cppclass _CSPropAbsorbingBC "CSPropAbsorbingBC" (_CSProperties):
@@ -143,6 +144,15 @@ cdef extern from "CSXCAD/CSPropAbsorbingBC.h":
         
         void    SetAbsorbingBoundaryType(ABCtype val)
         ABCtype  GetAbsorbingBoundaryType()
+
+        void         SetCPMLDepth(unsigned int val)
+        unsigned int GetCPMLDepth()
+        void         SetCPMLSigmaMax(double val)
+        double       GetCPMLSigmaMax()
+        void         SetCPMLAlphaMax(double val)
+        double       GetCPMLAlphaMax()
+        void         SetCPMLProfileOrder(unsigned int val)
+        unsigned int GetCPMLProfileOrder()
             
 cdef class CSPropAbsorbingBC(CSProperties):
     pass
@@ -163,6 +173,18 @@ cdef extern from "CSXCAD/CSPropModeAbsorb.h":
         bool GetUseModalFDTD()
         void SetN1D(unsigned int val)
         unsigned int GetN1D()
+        void SetKc(double val)
+        double GetKc()
+        void SetPortAmplitude(double val)
+        double GetPortAmplitude()
+        void SetUseStateSpace(bool val)
+        bool GetUseStateSpace()
+        void SetSSOrder(unsigned int n)
+        unsigned int GetSSOrder()
+        void SetSSP(const vector[double]& v)
+        void SetSSQ(const vector[double]& v)
+        void SetSSC(const vector[double]& v)
+        void SetSSD(double val)
 
 cdef class CSPropModeAbsorb(CSProperties):
     pass

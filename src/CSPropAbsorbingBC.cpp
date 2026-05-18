@@ -30,6 +30,11 @@ CSPropAbsorbingBC::CSPropAbsorbingBC(CSPropAbsorbingBC* prop, bool copyPrim) : C
 	NormSignPositive = prop->NormSignPositive;
 	PhaseVelocity.Copy(&prop->PhaseVelocity);
 	AbsorbingBoundaryType = prop->AbsorbingBoundaryType;
+
+	CPMLDepth = prop->CPMLDepth;
+	CPMLSigmaMax.Copy(&prop->CPMLSigmaMax);
+	CPMLAlphaMax.Copy(&prop->CPMLAlphaMax);
+	CPMLProfileOrder = prop->CPMLProfileOrder;
 }
 CSPropAbsorbingBC::CSPropAbsorbingBC(unsigned int ID, ParameterSet* paraSet) : CSProperties(ID,paraSet) {Type = ABSORBING_BC; Init();}
 CSPropAbsorbingBC::~CSPropAbsorbingBC()
@@ -41,6 +46,27 @@ void CSPropAbsorbingBC::Init()
 	NormSignPositive = true;
 	PhaseVelocity.SetValue((double)_C0_);
 	AbsorbingBoundaryType = CSPropAbsorbingBC::UNDEFINED;
+
+	CPMLDepth = 4;
+	CPMLSigmaMax.SetValue(0.0);   // 0 == auto
+	CPMLAlphaMax.SetValue(0.0);   // 0 == auto
+	CPMLProfileOrder = 3;
+}
+
+void CSPropAbsorbingBC::SetCPMLSigmaMax(double val)
+{
+	if (val >= 0)
+		CPMLSigmaMax.SetValue(val);
+	else
+		std::cerr << "CSPropAbsorbingBC::SetCPMLSigmaMax: ignoring negative value" << std::endl;
+}
+
+void CSPropAbsorbingBC::SetCPMLAlphaMax(double val)
+{
+	if (val >= 0)
+		CPMLAlphaMax.SetValue(val);
+	else
+		std::cerr << "CSPropAbsorbingBC::SetCPMLAlphaMax: ignoring negative value" << std::endl;
 }
 
 bool CSPropAbsorbingBC::Update(std::string *ErrStr)
@@ -84,6 +110,14 @@ bool CSPropAbsorbingBC::Write2XML(TiXmlNode& root, bool parameterised, bool spar
 
 	WriteTerm(PhaseVelocity,*prop,"PhaseVelocity",parameterised);
 
+	if (AbsorbingBoundaryType == CPML)
+	{
+		prop->SetAttribute("CPMLDepth",(int)CPMLDepth);
+		prop->SetAttribute("CPMLProfileOrder",(int)CPMLProfileOrder);
+		WriteTerm(CPMLSigmaMax,*prop,"CPMLSigmaMax",parameterised);
+		WriteTerm(CPMLAlphaMax,*prop,"CPMLAlphaMax",parameterised);
+	}
+
 	return true;
 }
 
@@ -107,6 +141,14 @@ bool CSPropAbsorbingBC::ReadFromXML(TiXmlNode &root)
 	if (prop->QueryIntAttribute("AbsorbingBoundaryType", &i_ABCtype) != TIXML_SUCCESS) i_ABCtype = 0;
 	AbsorbingBoundaryType = (ABCtype)i_ABCtype;
 
+	int i_tmp;
+	if (prop->QueryIntAttribute("CPMLDepth", &i_tmp) == TIXML_SUCCESS && i_tmp > 0)
+		CPMLDepth = (unsigned int)i_tmp;
+	if (prop->QueryIntAttribute("CPMLProfileOrder", &i_tmp) == TIXML_SUCCESS && i_tmp > 0)
+		CPMLProfileOrder = (unsigned int)i_tmp;
+	ReadTerm(CPMLSigmaMax,*prop,"CPMLSigmaMax");
+	ReadTerm(CPMLAlphaMax,*prop,"CPMLAlphaMax");
+
 	return true;
 }
 
@@ -127,6 +169,9 @@ void CSPropAbsorbingBC::ShowPropertyStatus(std::ostream& stream)
 		case ABCtype::MUR_1ST_SA:
 			s_BoundaryType = "1st order Mur BC with super-absorption";
 			break;
+		case ABCtype::CPML:
+			s_BoundaryType = "Convolution PML strip (CFS)";
+			break;
 	}
 
 	CSProperties::ShowPropertyStatus(stream);
@@ -134,4 +179,11 @@ void CSPropAbsorbingBC::ShowPropertyStatus(std::ostream& stream)
 	stream << "  Normal Sign Positive: " << s_sign << std::endl;
 	stream << "  Phase velocity: "   << PhaseVelocity.GetValue()/_C0_ << "*C0" << std::endl;
 	stream << "  Absorbing boundary condition type: "   << s_BoundaryType << std::endl;
+	if (AbsorbingBoundaryType == CPML)
+	{
+		stream << "  CPML depth: " << CPMLDepth << " cells" << std::endl;
+		stream << "  CPML profile order: " << CPMLProfileOrder << std::endl;
+		stream << "  CPML sigma_max: " << CPMLSigmaMax.GetValue() << " (0 = auto)" << std::endl;
+		stream << "  CPML alpha_max: " << CPMLAlphaMax.GetValue() << " (0 = auto)" << std::endl;
+	}
 }

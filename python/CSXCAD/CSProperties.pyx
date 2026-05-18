@@ -42,6 +42,7 @@ cimport CSXCAD.CSPrimitives as c_CSPrimitives
 from CSXCAD.CSPrimitives import CSPrimitives
 from CSXCAD.Utilities import CheckNyDir
 from libc.stdint cimport uintptr_t
+from libcpp.vector cimport vector
 
 def hex2color(color):
     if not type(color) is str:
@@ -711,7 +712,11 @@ cdef class CSPropAbsorbingBC(CSProperties):
 
     :param NormalSignPositive: bool             -- Positive if the normal direction will be in the positive direction of the axis, or negative.
     :param PhaseVelocity: double                -- The phase velocity of the expected propagating mode\signal. If not set, will set 0.    
-    :param AbsorbingBoundaryType: enum ABCtype  -- 'ABCtype.MUR_1ST_1PV', 'ABCtype.MUR_1ST_1PV_SA' or 'ABCtype.UNDEFINED'. The latter will result in an error
+    :param AbsorbingBoundaryType: enum ABCtype  -- 'ABCtype.MUR_1ST', 'ABCtype.MUR_1ST_SA', 'ABCtype.CPML' or 'ABCtype.UNDEFINED'. The latter will result in an error
+    :param CPMLDepth: int                       -- (CPML only) PML strip thickness in cells. Default 4.
+    :param CPMLSigmaMax: double                 -- (CPML only) Peak sigma at the outer edge. 0 = auto from R(0)=1e-6.
+    :param CPMLAlphaMax: double                 -- (CPML only) Peak CFS alpha at the inner edge. 0 = auto.
+    :param CPMLProfileOrder: int                -- (CPML only) Polynomial profile order p. Default 3.
     """
     def __init__(self, ParameterSet pset, *args, no_init=False, **kw):
         if no_init:
@@ -727,8 +732,17 @@ cdef class CSPropAbsorbingBC(CSProperties):
                 self.SetPhaseVelocity(kw[k])
             elif k=='AbsorbingBoundaryType':
                 self.SetAbsorbingBoundaryType(kw[k])
-                
-        for k in ['NormalSignPositive', 'PhaseVelocity', 'AbsorbingBoundaryType']:
+            elif k=='CPMLDepth':
+                self.SetCPMLDepth(kw[k])
+            elif k=='CPMLSigmaMax':
+                self.SetCPMLSigmaMax(kw[k])
+            elif k=='CPMLAlphaMax':
+                self.SetCPMLAlphaMax(kw[k])
+            elif k=='CPMLProfileOrder':
+                self.SetCPMLProfileOrder(kw[k])
+
+        for k in ['NormalSignPositive', 'PhaseVelocity', 'AbsorbingBoundaryType',
+                  'CPMLDepth', 'CPMLSigmaMax', 'CPMLAlphaMax', 'CPMLProfileOrder']:
             if k in kw:
                 del kw[k]
                 
@@ -751,6 +765,30 @@ cdef class CSPropAbsorbingBC(CSProperties):
     
     def GetAbsorbingBoundaryType(self):
         return (<_CSPropAbsorbingBC*>self.thisptr).GetAbsorbingBoundaryType()
+
+    def SetCPMLDepth(self, val):
+        (<_CSPropAbsorbingBC*>self.thisptr).SetCPMLDepth(int(val))
+
+    def GetCPMLDepth(self):
+        return (<_CSPropAbsorbingBC*>self.thisptr).GetCPMLDepth()
+
+    def SetCPMLSigmaMax(self, val):
+        (<_CSPropAbsorbingBC*>self.thisptr).SetCPMLSigmaMax(float(val))
+
+    def GetCPMLSigmaMax(self):
+        return (<_CSPropAbsorbingBC*>self.thisptr).GetCPMLSigmaMax()
+
+    def SetCPMLAlphaMax(self, val):
+        (<_CSPropAbsorbingBC*>self.thisptr).SetCPMLAlphaMax(float(val))
+
+    def GetCPMLAlphaMax(self):
+        return (<_CSPropAbsorbingBC*>self.thisptr).GetCPMLAlphaMax()
+
+    def SetCPMLProfileOrder(self, val):
+        (<_CSPropAbsorbingBC*>self.thisptr).SetCPMLProfileOrder(int(val))
+
+    def GetCPMLProfileOrder(self):
+        return (<_CSPropAbsorbingBC*>self.thisptr).GetCPMLProfileOrder()
 
 ###############################################################################
 cdef class CSPropModeAbsorb(CSProperties):
@@ -785,8 +823,26 @@ cdef class CSPropModeAbsorb(CSProperties):
                 self.SetUseModalFDTD(kw[k])
             elif k=='N1D':
                 self.SetN1D(kw[k])
+            elif k=='Kc':
+                self.SetKc(kw[k])
+            elif k=='PortAmplitude':
+                self.SetPortAmplitude(kw[k])
+            elif k=='UseStateSpace':
+                self.SetUseStateSpace(kw[k])
+            elif k=='SSOrder':
+                self.SetSSOrder(kw[k])
+            elif k=='SSP':
+                self.SetSSP(kw[k])
+            elif k=='SSQ':
+                self.SetSSQ(kw[k])
+            elif k=='SSC':
+                self.SetSSC(kw[k])
+            elif k=='SSD':
+                self.SetSSD(kw[k])
 
-        for k in ['NormalSignPositive', 'EModeFileName', 'HModeFileName', 'WaveImpedance', 'UseModalFDTD', 'N1D']:
+        for k in ['NormalSignPositive', 'EModeFileName', 'HModeFileName',
+                  'WaveImpedance', 'UseModalFDTD', 'N1D', 'Kc', 'PortAmplitude',
+                  'UseStateSpace', 'SSOrder', 'SSP', 'SSQ', 'SSC', 'SSD']:
             if k in kw:
                 del kw[k]
 
@@ -827,6 +883,45 @@ cdef class CSPropModeAbsorb(CSProperties):
 
     def GetN1D(self):
         return (<_CSPropModeAbsorb*>self.thisptr).GetN1D()
+
+    def SetKc(self, val):
+        (<_CSPropModeAbsorb*>self.thisptr).SetKc(val)
+
+    def GetKc(self):
+        return (<_CSPropModeAbsorb*>self.thisptr).GetKc()
+
+    def SetPortAmplitude(self, val):
+        (<_CSPropModeAbsorb*>self.thisptr).SetPortAmplitude(val)
+
+    def GetPortAmplitude(self):
+        return (<_CSPropModeAbsorb*>self.thisptr).GetPortAmplitude()
+
+    def SetUseStateSpace(self, val):
+        (<_CSPropModeAbsorb*>self.thisptr).SetUseStateSpace(val)
+
+    def GetUseStateSpace(self):
+        return (<_CSPropModeAbsorb*>self.thisptr).GetUseStateSpace()
+
+    def SetSSOrder(self, val):
+        (<_CSPropModeAbsorb*>self.thisptr).SetSSOrder(val)
+
+    def GetSSOrder(self):
+        return (<_CSPropModeAbsorb*>self.thisptr).GetSSOrder()
+
+    def SetSSP(self, val):
+        cdef vector[double] cv = list(val)
+        (<_CSPropModeAbsorb*>self.thisptr).SetSSP(cv)
+
+    def SetSSQ(self, val):
+        cdef vector[double] cv = list(val)
+        (<_CSPropModeAbsorb*>self.thisptr).SetSSQ(cv)
+
+    def SetSSC(self, val):
+        cdef vector[double] cv = list(val)
+        (<_CSPropModeAbsorb*>self.thisptr).SetSSC(cv)
+
+    def SetSSD(self, val):
+        (<_CSPropModeAbsorb*>self.thisptr).SetSSD(val)
 
 ###############################################################################
 cdef class CSPropLumpedElement(CSProperties):

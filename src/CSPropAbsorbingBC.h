@@ -30,7 +30,8 @@ public:
 	{
 		UNDEFINED	= 0,
 		MUR_1ST 	= 1,	// Mur's BC, 1st order
-		MUR_1ST_SA 	= 2		// Mur's BC, 1st order, with Super Absorption
+		MUR_1ST_SA 	= 2,	// Mur's BC, 1st order, with Super Absorption
+		CPML		= 3		// Convolution PML strip (CFS-CPML, kappa=1 simplification)
 	};
 
 	CSPropAbsorbingBC(ParameterSet* paraSet);
@@ -59,6 +60,21 @@ public:
 	void SetAbsorbingBoundaryType(ABCtype val) {AbsorbingBoundaryType = val;};
 	ABCtype GetAbsorbingBoundaryType() {return AbsorbingBoundaryType;};
 
+	// CPML-only parameters. Ignored unless AbsorbingBoundaryType == CPML.
+	void   SetCPMLDepth(unsigned int val)       {CPMLDepth = val;}
+	unsigned int GetCPMLDepth() const           {return CPMLDepth;}
+
+	//! Peak conductivity at outer edge of PML. Set to 0 to auto-pick from R(0)=1e-6.
+	void   SetCPMLSigmaMax(double val);
+	double GetCPMLSigmaMax() const              {return CPMLSigmaMax.GetValue();}
+
+	//! Peak CFS alpha at inner edge of PML. Set to 0 to auto-pick.
+	void   SetCPMLAlphaMax(double val);
+	double GetCPMLAlphaMax() const              {return CPMLAlphaMax.GetValue();}
+
+	void   SetCPMLProfileOrder(unsigned int val){CPMLProfileOrder = val;}
+	unsigned int GetCPMLProfileOrder() const    {return CPMLProfileOrder;}
+
 	virtual bool Update(std::string *ErrStr = NULL);
 
 	virtual bool Write2XML(TiXmlNode& root, bool parameterised = true, bool sparse = false);
@@ -71,4 +87,10 @@ protected:
 	bool			NormSignPositive;
 	ParameterScalar	PhaseVelocity;
 	ABCtype			AbsorbingBoundaryType;
+
+	// CPML parameters (only used when AbsorbingBoundaryType == CPML)
+	unsigned int    CPMLDepth;
+	ParameterScalar CPMLSigmaMax;
+	ParameterScalar CPMLAlphaMax;
+	unsigned int    CPMLProfileOrder;
 };

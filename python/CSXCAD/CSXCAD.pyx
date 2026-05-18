@@ -198,6 +198,10 @@ cdef class ContinuousStructure:
         """
 
         return self.__CreateProperty('AbsorbingBC', name, **kw)
+
+    def AddModeAbsorb(self, name, **kw):
+        """ Mode-matched waveguide-port absorber (1D modal FDTD). """
+        return self.__CreateProperty('ModeAbsorb', name, **kw)
     
     def AddLumpedElement(self, name, **kw):
         """ AddLumpedElement(name, **kw)
